@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual Interactivo de TikTok & IA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Digital Creator -->
+    <!-- Application Structure Plan: A dashboard-style "Creator's Playbook" SPA. The structure prioritizes user exploration over the report's linear format. It uses a main navigation to jump to thematic sections: 'Algoritmo', 'Estilos Virales', 'Duración Ideal', and 'Herramientas'. This task-oriented design allows users to quickly find relevant information. Key interactions include clickable cards for exploring viral styles in-depth (opening a modal), an interactive chart for comparing video durations, and hover effects on key metrics for quick explanations. This structure was chosen to make the dense report content digestible, engaging, and actionable for an aspiring creator. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: Key algorithm metrics. -> Goal: Inform. -> Viz/Method: Interactive list with icons (HTML/Tailwind) and hover-reveal tooltips. -> Interaction: Hover. -> Justification: Breaks down complex data into scannable, easy-to-understand pieces.
+        - Report Info: Optimal video durations. -> Goal: Compare. -> Viz/Method: Horizontal Bar Chart (Chart.js/Canvas). -> Interaction: Hover on bars for detailed tooltips. -> Justification: Visually represents and compares numerical data far more effectively than a static table.
+        - Report Info: 7 viral AI video styles. -> Goal: Organize & Inform. -> Viz/Method: Grid of clickable cards opening a detailed modal view. -> Interaction: Click. -> Justification: Organizes a large amount of content into categories, allowing users to self-select and explore topics of interest without being overwhelmed (Master-Detail pattern).
+        - Report Info: List of AI tools. -> Goal: Organize. -> Viz/Method: Accordion component. -> Interaction: Click to expand. -> Justification: Manages a long list of items in a compact, user-friendly manner.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8F7F4;
+            color: #2c3e50;
+        }
+        .nav-link {
+            transition: color 0.3s ease, border-color 0.3s ease;
+        }
+        .card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .modal-backdrop {
+            transition: opacity 0.3s ease-in-out;
+        }
+        .modal-content {
+            transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 400px;
+            max-height: 60vh;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 500px;
+            }
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-white/80 backdrop-blur-lg sticky top-0 z-40 shadow-sm">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="text-2xl font-bold text-gray-800">
+                TikTok<span class="text-[#4A90E2]">IA</span> Playbook
+            </div>
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="#algoritmo" class="nav-link text-gray-600 hover:text-[#4A90E2] border-b-2 border-transparent hover:border-[#4A90E2]">El Algoritmo</a>
+                <a href="#estilos" class="nav-link text-gray-600 hover:text-[#4A90E2] border-b-2 border-transparent hover:border-[#4A90E2]">Estilos Virales</a>
+                <a href="#duracion" class="nav-link text-gray-600 hover:text-[#4A90E2] border-b-2 border-transparent hover:border-[#4A90E2]">Duración Ideal</a>
+                <a href="#herramientas" class="nav-link text-gray-600 hover:text-[#4A90E2] border-b-2 border-transparent hover:border-[#4A90E2]">Estrategias</a>
+            </div>
+            <button id="mobile-menu-button" class="md:hidden focus:outline-none">
+                <svg class="w-6 h-6 text-gray-600" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" stroke="currentColor">
+                    <path d="M4 6h16M4 12h16m-7 6h7"></path>
+                </svg>
+            </button>
+        </nav>
+        <div id="mobile-menu" class="hidden md:hidden px-6 pt-2 pb-4 space-y-2">
+            <a href="#algoritmo" class="block nav-link text-gray-600 hover:text-[#4A90E2]">El Algoritmo</a>
+            <a href="#estilos" class="block nav-link text-gray-600 hover:text-[#4A90E2]">Estilos Virales</a>
+            <a href="#duracion" class="block nav-link text-gray-600 hover:text-[#4A90E2]">Duración Ideal</a>
+            <a href="#herramientas" class="block nav-link text-gray-600 hover:text-[#4A90E2]">Estrategias</a>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-8 md:py-16">
+
+        <section id="hero" class="text-center mb-16 md:mb-24">
+            <h1 class="text-4xl md:text-6xl font-extrabold text-gray-800 mb-4">Domina TikTok con Inteligencia Artificial</h1>
+            <p class="max-w-3xl mx-auto text-lg md:text-xl text-gray-600">
+                Esta es tu guía interactiva definitiva para crear contenido viral. Olvídate de las listas genéricas y aprende a usar la IA para generar seguidores, likes y fama con estrategias probadas.
+            </p>
+        </section>
+
+        <section id="algoritmo" class="mb-16 md:mb-24 scroll-mt-20">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-800">Entendiendo el Algoritmo</h2>
+                <p class="mt-4 max-w-2xl mx-auto text-gray-600">El algoritmo de TikTok es tu aliado secreto. Prioriza el contenido atractivo sobre el número de seguidores. Para volverte viral, debes optimizar estas métricas clave que la IA de la plataforma analiza constantemente. Interactúa con cada métrica para entender su importancia.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="group relative bg-white p-6 rounded-lg shadow-md border border-gray-200">
+                    <h3 class="text-xl font-semibold text-gray-800 flex items-center">
+                        <span class="mr-3 text-2xl">⏱️</span> Tiempo de Visualización
+                    </h3>
+                    <p class="mt-2 text-gray-600">Duración total que los usuarios pasan viendo tu video. ¡Mantenlos enganchados!</p>
+                </div>
+                <div class="group relative bg-white p-6 rounded-lg shadow-md border border-gray-200">
+                    <h3 class="text-xl font-semibold text-gray-800 flex items-center">
+                        <span class="mr-3 text-2xl">🏁</span> Tasa de Completitud
+                    </h3>
+                    <p class="mt-2 text-gray-600">Porcentaje de usuarios que ven el video hasta el final. Un video corto visto por completo vale oro.</p>
+                </div>
+                <div class="group relative bg-white p-6 rounded-lg shadow-md border border-gray-200">
+                    <h3 class="text-xl font-semibold text-gray-800 flex items-center">
+                        <span class="mr-3 text-2xl">❤️</span> Interacciones
+                    </h3>
+                    <p class="mt-2 text-gray-600">Likes, comentarios, compartidos y guardados. Los compartidos y comentarios tienen un peso especial.</p>
+                </div>
+                <div class="group relative bg-white p-6 rounded-lg shadow-md border border-gray-200">
+                    <h3 class="text-xl font-semibold text-gray-800 flex items-center">
+                        <span class="mr-3 text-2xl">#️⃣</span> Hashtags Relevantes
+                    </h3>
+                    <p class="mt-2 text-gray-600">Ayudan al algoritmo a categorizar tu video y mostrarlo a la audiencia correcta.</p>
+                </div>
+                <div class="group relative bg-white p-6 rounded-lg shadow-md border border-gray-200">
+                    <h3 class="text-xl font-semibold text-gray-800 flex items-center">
+                        <span class="mr-3 text-2xl">🎵</span> Sonidos de Tendencia
+                    </h3>
+                    <p class="mt-2 text-gray-600">Aumenta la visibilidad y la probabilidad de que tu video sea descubierto.</p>
+                </div>
+                <div class="group relative bg-white p-6 rounded-lg shadow-md border border-gray-200">
+                    <h3 class="text-xl font-semibold text-gray-800 flex items-center">
+                        <span class="mr-3 text-2xl">✨</span> Calidad del Video
+                    </h3>
+                    <p class="mt-2 text-gray-600">Videos claros, bien iluminados y con buen audio son preferidos por todos.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="estilos" class="mb-16 md:mb-24 scroll-mt-20">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-800">Explora los Estilos Virales con IA</h2>
+                 <p class="mt-4 max-w-2xl mx-auto text-gray-600">La IA ha desbloqueado nuevos formatos de contenido increíblemente populares. Cada estilo tiene un potencial viral único. Haz clic en cada tarjeta para descubrir ejemplos, estrategias de creación y consejos para dominar cada formato y diferenciarte del resto.</p>
+            </div>
+            <div id="styles-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            </div>
+        </section>
+
+        <section id="duracion" class="mb-16 md:mb-24 scroll-mt-20">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-800">La Duración Perfecta para Cada Estilo</h2>
+                <p class="mt-4 max-w-2xl mx-auto text-gray-600">No existe una única duración "ideal". El tiempo óptimo depende del tipo de contenido que creas. Este gráfico interactivo te muestra los rangos de duración recomendados para maximizar el engagement. Recuerda: sin importar la duración, los primeros 3 segundos son CRÍTICOS para enganchar a tu audiencia.</p>
+            </div>
+            <div class="bg-white p-4 sm:p-6 md:p-8 rounded-xl shadow-lg border border-gray-200">
+                <div class="chart-container">
+                    <canvas id="durationChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <section id="herramientas" class="scroll-mt-20">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-800">Estrategias y Herramientas Esenciales</h2>
+                <p class="mt-4 max-w-2xl mx-auto text-gray-600">El éxito viral requiere una estrategia sólida y las herramientas adecuadas. Aquí encontrarás consejos fundamentales y una selección de las mejores herramientas de IA para cada etapa de tu proceso creativo, desde la ideación hasta la optimización. Explora cada categoría para construir tu propio sistema de contenido.</p>
+            </div>
+            <div id="accordion-container" class="max-w-4xl mx-auto space-y-4">
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-gray-800 text-white mt-16">
+        <div class="container mx-auto px-6 py-8 text-center">
+            <p>&copy; 2025 TikTokIA Playbook. Creado para ayudarte a alcanzar la viralidad.</p>
+            <p class="text-sm text-gray-400 mt-2">Una aplicación interactiva para explorar el potencial de la IA en la creación de contenido.</p>
+        </div>
+    </footer>
+
+    <div id="style-modal" class="modal-backdrop fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center p-4 hidden opacity-0">
+        <div id="modal-content" class="modal-content bg-white rounded-lg shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto relative transform scale-95 opacity-0">
+            <button id="close-modal-button" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800 z-10">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            <div id="modal-body" class="p-6 md:p-10">
+            </div>
+        </div>
+    </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const viralStylesData = [
+        {
+            title: "Influencers Virtuales y Avatares IA",
+            icon: "🤖",
+            description: "Creación de personajes digitales que actúan como influencers, presentando contenido e interactuando con la audiencia.",
+            examples: ["Lil Miquela (@lilmiquela)", "Lu Do Magalu (@magalu)", "Janky & Guggimon (@jankyandguggimon)"],
+            howTo: [
+                "Usa generadores de video con IA que ofrezcan avatares (ej. Creatify.ai, Invideo AI, Vidnoz).",
+                "Desarrolla una personalidad, estilo y nicho de contenido claros para tu avatar.",
+                "Crea guiones atractivos (puedes usar ChatGPT o Jasper.ai).",
+                "Añade voces en off realistas para dar vida al personaje."
+            ],
+            duration: "15-60s (clips), 1-2 min (vlogs)"
+        },
+        {
+            title: "Arte y Visuales Generados por IA",
+            icon: "�",
+            description: "Videos que exhiben imágenes, animaciones o filtros creados por IA, explorando desde lo estético y surreal hasta lo inquietante.",
+            examples: ["Filtro Manga de TikTok", "Cuentas como 'AI Is Cursed'", "Videos de viajes con paisajes imaginativos"],
+            howTo: [
+                "Experimenta con generadores de imágenes y video (ej. invideo AI, Midjourney).",
+                "Explora estilos visuales únicos: oníricos, distópicos, abstractos.",
+                "Usa prompts detallados: especifica personajes, acciones, cámaras y entornos.",
+                "Combina los visuales con sonidos de tendencia para mayor impacto."
+            ],
+            duration: "7-30s (impacto rápido), 30-60s (concepto)"
+        },
+        {
+            title: "Humor y Memes con IA",
+            icon: "😂",
+            description: "Contenido cómico donde la IA es el creador, sujeto o medio para generar situaciones absurdas, parodias o chistes.",
+            examples: ["Memes como 'Italian Brainrot'", "Roasts o 'clapbacks' generados por IA"],
+            howTo: [
+                "Combina visuales generados por IA con voces en off cómicas o exageradas.",
+                "Crea personajes de IA singulares que se integren en el universo de los memes.",
+                "Usa prompts creativos para generar diálogos o situaciones inesperadas.",
+                "Incorpora sonidos de tendencia y transiciones rápidas."
+            ],
+            duration: "15-34s"
+        },
+        {
+            title: "Noticias y Explicaciones de IA",
+            icon: "📰",
+            description: "Videos que informan sobre avances en IA, simplifican conceptos complejos o analizan su impacto en diversas industrias.",
+            examples: ["Anuncios de nuevas tecnologías IA", "Explicaciones de cómo funciona un modelo", "Canales como @evhandd"],
+            howTo: [
+                "Elige un nicho de IA que te apasione y domines.",
+                "Investiga a fondo y busca un ángulo único o diferente.",
+                "Simplifica conceptos complejos con analogías y ejemplos visuales (función Greenscreen).",
+                "Usa la IA para generar ideas, guiones y resúmenes de noticias."
+            ],
+            duration: "1-3 min (explicaciones), 30-60s (noticias)"
+        },
+        {
+            title: "Hacks de Productividad con IA",
+            icon: "🚀",
+            description: "Demostraciones de cómo la IA puede resolver problemas cotidianos, automatizar tareas o mejorar la eficiencia personal y profesional.",
+            examples: ["Automatización para escribir guiones", "Herramientas que editan videos largos en clips virales", "Hacks de estudio impulsados por IA"],
+            howTo: [
+                "Identifica un problema común y muestra cómo la IA lo soluciona.",
+                "Demuestra el proceso paso a paso de forma clara y concisa.",
+                "Enfócate en el 'antes y después' o en el ahorro de tiempo/esfuerzo.",
+                "Usa la IA para generar ideas de contenido que resalten su valor práctico."
+            ],
+            duration: "30-90s"
+        },
+        {
+            title: "Debates Éticos y Reflexiones",
+            icon: "🤔",
+            description: "Contenido que explora las implicaciones morales, sociales y filosóficas de la IA, fomentando el debate y el pensamiento crítico.",
+            examples: ["¿Debería la IA tener una brújula moral?", "Debates sobre sesgos y privacidad", "Análisis de deepfakes"],
+            howTo: [
+                "Presenta dilemas éticos de forma equilibrada, invitando al debate.",
+                "Utiliza ejemplos concretos o escenarios hipotéticos provocativos.",
+                "Investiga a fondo para ofrecer información precisa y matizada.",
+                "Fomenta la interacción haciendo preguntas directas en tus videos y comentarios."
+            ],
+            duration: "1-3 min (argumentos), 30-60s (preguntas)"
+        },
+        {
+            title: "Lo Surreal y Cotidiano con IA",
+            icon: "🌌",
+            description: "Videos que presentan la IA en situaciones inesperadas o bizarras, mezclando lo mundano con lo fantástico o inquietante.",
+            examples: ["Videos de 'accidentes' generados por IA", "Vlogs de 'alienígenas' con IA", "ASMR surrealista (ej. comer lava)"],
+            howTo: [
+                "Piensa en un escenario habitual e introduce un elemento de IA que lo rompa.",
+                "Usa herramientas de IA para crear una sensación de 'valle inquietante'.",
+                "Enfócate en la alta calidad de producción para que el efecto sea convincente.",
+                "Aprovecha la edición rápida y sonidos inmersivos para un alto impacto."
+            ],
+            duration: "7-30s"
+        }
+    ];
+
+    const accordionData = [
+        {
+            title: "Consejos Generales para el Éxito",
+            content: "<ul><li class='mb-2'><strong>Autenticidad:</strong> Conecta emocionalmente. La IA es una herramienta, no tu voz.</li><li class='mb-2'><strong>Consistencia:</strong> Publica regularmente para mantener al algoritmo interesado.</li><li class='mb-2'><strong>Nicho y Valor:</strong> Elige un tema que te apasione y ofrece valor real.</li><li class='mb-2'><strong>Ganchos Poderosos:</strong> Captura la atención en los primeros 3 segundos.</li><li class='mb-2'><strong>Tendencias:</strong> Usa hashtags y sonidos populares de forma estratégica.</li><li class='mb-2'><strong>Engagement:</strong> Responde comentarios y crea una comunidad.</li></ul>"
+        },
+        {
+            title: "Generadores de Video Completos",
+            content: "<ul><li class='mb-2'><strong>Invideo AI:</strong> Transforma guiones en videos completos. Ideal para canales 'sin rostro'.</li><li class='mb-2'><strong>Creatify.ai:</strong> Crea videos a partir de texto o URLs, con cientos de avatares y voces.</li><li class='mb-2'><strong>Mootion AI:</strong> Plataforma de texto a video para animaciones fotorrealistas o de dibujos animados.</li></ul>"
+        },
+        {
+            title: "Generadores de Voz y Avatares",
+            content: "<ul><li class='mb-2'><strong>Vidnoz:</strong> Crea avatares de IA personalizados con sincronización labial realista.</li><li class='mb-2'><strong>Typecast.ai:</strong> Proporciona voces en off generadas por IA y avatares digitales.</li></ul>"
+        },
+        {
+            title: "Ideas, Guiones y Optimización",
+            content: "<ul><li class='mb-2'><strong>ChatGPT / Jasper.ai / Copy.ai:</strong> Potentes para generar ideas, guiones, y textos atractivos.</li><li class='mb-2'><strong>TrendTok:</strong> Herramienta de IA para predecir tendencias de TikTok (hashtags, canciones).</li><li class='mb-2'><strong>Lately.ai:</strong> Optimiza tu contenido analizando qué resuena más con la audiencia.</li></ul>"
+        },
+        {
+            title: "Técnicas Avanzadas con IA",
+            content: "<ul><li class='mb-2'><strong>Ingeniería de Prompts:</strong> Sé ultra específico en tus instrucciones a la IA para obtener mejores resultados.</li><li class='mb-2'><strong>Creación por Lotes:</strong> Usa herramientas que permitan crear múltiples videos a la vez para escalar tu producción.</li><li class='mb-2'><strong>Sistemas de Contenido:</strong> Automatiza la recopilación de noticias y la generación de guiones para un flujo constante de contenido.</li></ul>"
+        }
+    ];
+
+    const stylesGrid = document.getElementById('styles-grid');
+    viralStylesData.forEach((style, index) => {
+        const card = document.createElement('div');
+        card.className = 'card bg-white p-6 rounded-lg shadow-md border border-gray-200 cursor-pointer flex flex-col items-center text-center';
+        card.dataset.index = index;
+        card.innerHTML = `
+            <div class="text-5xl mb-4">${style.icon}</div>
+            <h3 class="text-xl font-semibold text-gray-800">${style.title}</h3>
+            <p class="mt-2 text-gray-600 text-sm flex-grow">${style.description}</p>
+            <p class="mt-4 text-xs font-bold text-[#4A90E2]">DURACIÓN: ${style.duration}</p>
+        `;
+        stylesGrid.appendChild(card);
+    });
+
+    const modal = document.getElementById('style-modal');
+    const modalContent = document.getElementById('modal-content');
+    const modalBody = document.getElementById('modal-body');
+    const closeModalButton = document.getElementById('close-modal-button');
+
+    stylesGrid.addEventListener('click', (e) => {
+        const card = e.target.closest('.card');
+        if (card) {
+            const style = viralStylesData[card.dataset.index];
+            modalBody.innerHTML = `
+                <div class="text-center mb-6">
+                    <span class="text-6xl">${style.icon}</span>
+                    <h2 class="text-3xl font-bold mt-4 text-gray-800">${style.title}</h2>
+                    <p class="mt-2 text-gray-600">${style.description}</p>
+                </div>
+                <div class="space-y-6">
+                    <div>
+                        <h4 class="text-lg font-semibold text-gray-700 border-b-2 border-[#4A90E2] pb-1 mb-3">Ejemplos Virales</h4>
+                        <ul class="list-disc list-inside text-gray-600 space-y-1">
+                            ${style.examples.map(ex => `<li>${ex}</li>`).join('')}
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-lg font-semibold text-gray-700 border-b-2 border-[#4A90E2] pb-1 mb-3">Cómo Crearlos (Paso a Paso)</h4>
+                        <ol class="list-decimal list-inside text-gray-600 space-y-2">
+                             ${style.howTo.map(step => `<li>${step}</li>`).join('')}
+                        </ol>
+                    </div>
+                     <div>
+                        <h4 class="text-lg font-semibold text-gray-700 border-b-2 border-[#4A90E2] pb-1 mb-3">Duración Óptima</h4>
+                        <p class="text-gray-600 font-medium">${style.duration}</p>
+                    </div>
+                </div>
+            `;
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modalContent.classList.remove('scale-95', 'opacity-0');
+            }, 10);
+        }
+    });
+
+    const closeModal = () => {
+        modalContent.classList.add('scale-95', 'opacity-0');
+        modal.classList.add('opacity-0');
+        setTimeout(() => {
+            modal.classList.add('hidden');
+        }, 300);
+    };
+
+    closeModalButton.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeModal();
+        }
+    });
+    
+    const accordionContainer = document.getElementById('accordion-container');
+    accordionData.forEach((item, index) => {
+        const accordionItem = document.createElement('div');
+        accordionItem.className = 'bg-white border border-gray-200 rounded-lg overflow-hidden';
+        accordionItem.innerHTML = `
+            <button class="accordion-header w-full flex justify-between items-center p-5 text-left font-semibold text-gray-700 hover:bg-gray-50 focus:outline-none">
+                <span>${item.title}</span>
+                <svg class="accordion-icon w-5 h-5 text-gray-500 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            </button>
+            <div class="accordion-content hidden p-5 border-t border-gray-200 text-gray-600">
+                ${item.content}
+            </div>
+        `;
+        accordionContainer.appendChild(accordionItem);
+    });
+
+    accordionContainer.addEventListener('click', (e) => {
+        const header = e.target.closest('.accordion-header');
+        if (header) {
+            const content = header.nextElementSibling;
+            const icon = header.querySelector('.accordion-icon');
+            
+            content.classList.toggle('hidden');
+            icon.classList.toggle('rotate-180');
+        }
+    });
+    
+    const durationChartCtx = document.getElementById('durationChart').getContext('2d');
+    const durationData = {
+        labels: ['Humor/Memes', 'Arte/Visual', 'Surreal/Cotidiano', 'Hacks Productividad', 'Noticias/Explicación', 'Influencer/Vlog', 'Debates Éticos'],
+        datasets: [{
+            label: 'Duración Mínima (s)',
+            data: [15, 7, 7, 30, 30, 15, 30],
+            backgroundColor: 'rgba(74, 144, 226, 0.3)',
+            borderColor: 'rgba(74, 144, 226, 1)',
+            borderWidth: 1,
+            borderRadius: 5,
+            borderSkipped: false,
+        }, {
+            label: 'Duración Máxima (s)',
+            data: [34, 60, 30, 90, 180, 120, 180],
+            backgroundColor: 'rgba(74, 144, 226, 0.7)',
+            borderColor: 'rgba(74, 144, 226, 1)',
+            borderWidth: 1,
+            borderRadius: 5,
+            borderSkipped: false,
+        }]
+    };
+    new Chart(durationChartCtx, {
+        type: 'bar',
+        data: durationData,
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    stacked: false,
+                    title: {
+                        display: true,
+                        text: 'Duración del Video (segundos)',
+                        font: { size: 14 }
+                    }
+                },
+                y: {
+                    stacked: false,
+                    ticks: {
+                        font: { size: 12 }
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                title: {
+                    display: true,
+                    text: 'Rangos de Duración Óptima por Estilo de Video',
+                    font: { size: 18, weight: 'bold' }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.parsed.x !== null) {
+                                label += context.parsed.x + 's';
+                            }
+                            return label;
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    const mobileMenuButton = document.getElementById('mobile-menu-button');
+    const mobileMenu = document.getElementById('mobile-menu');
+    mobileMenuButton.addEventListener('click', () => {
+        mobileMenu.classList.toggle('hidden');
+    });
+});
+</script>
+</body>
+</html>
